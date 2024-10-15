@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6">
+            <img src="{{ product.image }}" class="img-fluid" alt="{{ product.name }}">
+        </div>
+        <div class="col-md-6">
+            <h1>{{ product.name }}</h1>
+            <p class="lead">{{ product.description }}</p>
+            <p><strong>Price:</strong> ${{ product.unit_price }}</p>
+            <p><strong>Stock:</strong> {{ product.stock }}</p>
+            <p><strong>Category:</strong> {{ product.category_name }}</p>
+            <a href="{% url "add_to_cart" product.id %}" class="btn btn-success">Add to Cart</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

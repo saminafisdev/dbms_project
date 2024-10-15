@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <h1>Your Cart</h1>
+    
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th></th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Total Price</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in cart_items %}
+            <tr>
+                <td>{{ item.1 }}</td>  <!-- Product name -->
+                <td><img src="{{item.2}}" alt="{{item.1}}" style="width: 50px; height: 50px; object-fit: contain;" /></td>
+                <td>{{ item.3 }}</td>  <!-- Quantity -->
+                <td>${{ item.4 }}</td>  <!-- Unit Price -->
+                <td>${{ item.5 }}</td>  <!-- Total Price (from SQL) -->
+                <td><a href="{% url "remove_from_cart" item.0 %}"><i class="bi bi-trash" style="color: red;"></i></a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <h3>Total: ${{ total }}</h3>
+</div>
+
+{% endblock %}

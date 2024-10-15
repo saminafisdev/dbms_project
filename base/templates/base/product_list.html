@@ -1,0 +1,39 @@
+<!-- base/product_list.html -->
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <!-- Sidebar for Categories -->
+    <div class="col-md-3">
+        <div class="list-group">
+            <h5 class="list-group-item">Categories</h5>
+            {% for category_id, category_name in categories %}
+                <a href="{% url 'product_by_category' category_id %}" class="list-group-item list-group-item-action">
+                    {{ category_name }}
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Main content for Products -->
+    <div class="col-md-9">
+        <h1>Products</h1>
+        <div class="row">
+            {% for product in products %}
+                <div class="col-md-3">
+                    <div class="card mb-4">
+                        <img src="{{ product.5 }}" class="card-img-top" alt="{{ product.name }}" style="width: auto; height: 150px; object-fit:contain;">
+                        <div class="card-body">
+                            <h5 class="card-title"><a href="{% url "product_detail" product.0 %}" class="nav-link">{{ product.2 }}</a></h5>
+                            <p class="card-text">{{ product.2 }}</p>
+                            <p class="card-text">Price: ${{ product.3 }}</p>
+                            <a href="{% url "add_to_cart" product.0 %}" class="btn btn-success">Add to Cart</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
