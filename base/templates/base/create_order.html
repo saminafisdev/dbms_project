@@ -1,0 +1,10 @@
+<!-- e:\nextcommerce\base\templates\base\create_order.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Create Order</h2>
+    <p>Your order has been created successfully!</p>
+    <a href="{% url 'order_success' %}" class="btn btn-primary">View Order</a>
+</div>
+{% endblock %}

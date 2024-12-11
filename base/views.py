@@ -234,3 +234,84 @@ def remove_from_cart(request, cart_item_id):
     return redirect(
         "view_cart"
     )  # Change 'view_cart' to the appropriate URL name if necessary
+
+
+@login_required(login_url="login")
+def create_order(request):
+    if request.method == "POST":
+        # Get the customer ID from the logged-in user
+        customer_id = request.user.customer.id
+
+        # Calculate the total amount from the cart items
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT SUM(ci.quantity * p.unit_price) AS total
+                FROM base_cartitem ci
+                JOIN base_product p ON ci.product_id = p.id
+                JOIN base_cart c ON ci.cart_id = c.id
+                WHERE c.user_id = %s;
+                """,
+                [customer_id],
+            )
+            total_amount = cursor.fetchone()[0] or 0  # Default to 0 if None
+
+        # Create the order
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                INSERT INTO base_order (user_id, total_amount, is_completed, created_at, updated_at)
+                VALUES (%s, %s, %s, datetime('now'), datetime('now'));
+                """,
+                [customer_id, total_amount, False],
+            )
+            order_id = cursor.lastrowid  # Get the ID of the newly created order
+
+        # Get cart items and create order items
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT ci.product_id, ci.quantity, p.unit_price
+                FROM base_cartitem ci
+                JOIN base_cart c ON ci.cart_id = c.id
+                JOIN base_product p ON ci.product_id = p.id
+                WHERE c.user_id = %s;
+                """,
+                [customer_id],
+            )
+            cart_items = cursor.fetchall()
+
+            for item in cart_items:
+                product_id, quantity, unit_price = item
+                cursor.execute(
+                    """
+                    INSERT INTO base_orderitem (order_id, product_id, quantity, price)
+                    VALUES (%s, %s, %s, %s);
+                    """,
+                    [order_id, product_id, quantity, unit_price],
+                )
+
+        # Clear the cart after the order is created
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                DELETE FROM base_cartitem
+                WHERE cart_id IN (
+                    SELECT id FROM base_cart WHERE user_id = %s
+                );
+                """,
+                [customer_id],
+            )
+
+        return redirect("order_success")  # Redirect to a success page or order summary
+
+    return render(request, "base/create_order.html")  # Render the order creation page
+
+
+# In e:\nextcommerce\base\views.py
+
+
+def order_success(request):
+    return render(
+        request, "base/order_success.html"
+    )  # Create a template for order success

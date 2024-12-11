@@ -30,6 +30,7 @@
     </table>
     
     <h3>Total: ${{ total|floatformat:2 }}</h3>
+    <a href="{% url "create_order" %}" class="btn btn-primary">Place Order</a>
 </div>
 
 {% endblock %}
