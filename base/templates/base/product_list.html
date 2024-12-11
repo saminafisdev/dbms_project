@@ -1,39 +1,94 @@
-<!-- base/product_list.html -->
-
 {% extends "base.html" %}
 
 {% block content %}
-<div class="row">
-    <!-- Sidebar for Categories -->
-    <div class="col-md-3">
-        <div class="list-group">
-            <h5 class="list-group-item">Categories</h5>
-            {% for category_id, category_name in categories %}
-                <a href="{% url 'product_by_category' category_id %}" class="list-group-item list-group-item-action">
-                    {{ category_name }}
-                </a>
-            {% endfor %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Products</h1>
+    
+    <!-- Search Bar -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <form class="d-flex" method="GET" action="{% url 'product_list' %}">
+                <input class="form-control me-2" type="search" name="search" placeholder="Search for products..." aria-label="Search" value="{{ search_query }}">
+                
+                <select name="sort" class="form-select me-2">
+                    <option value="name_asc" {% if sort_option == 'name_asc' %}selected{% endif %}>Name (A to Z)</option>
+                    <option value="name_desc" {% if sort_option == 'name_desc' %}selected{% endif %}>Name (Z to A)</option>
+                    <option value="price_asc" {% if sort_option == 'price_asc' %}selected{% endif %}>Price (Low to High)</option>
+                    <option value="price_desc" {% if sort_option == 'price_desc' %}selected{% endif %}>Price (High to Low)</option>
+                </select>
+
+                <button class="btn btn-outline-primary" type="submit">Search</button>
+            </form>
         </div>
     </div>
 
-    <!-- Main content for Products -->
-    <div class="col-md-9">
-        <h1>Products</h1>
-        <div class="row">
-            {% for product in products %}
-                <div class="col-md-3">
-                    <div class="card mb-4">
-                        <img src="{{ product.5 }}" class="card-img-top" alt="{{ product.name }}" style="width: auto; height: 150px; object-fit:contain;">
-                        <div class="card-body">
-                            <h5 class="card-title"><a href="{% url "product_detail" product.0 %}" class="nav-link">{{ product.2 }}</a></h5>
-                            <p class="card-text">{{ product.2 }}</p>
-                            <p class="card-text">Price: ${{ product.3 }}</p>
-                            <a href="{% url "add_to_cart" product.0 %}" class="btn btn-success">Add to Cart</a>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
+    <div class="row">
+        <!-- Sidebar for Categories -->
+        <div class="col-md-3">
+            <div class="list-group">
+                <h5 class="list-group-item">Categories</h5>
+                {% for category_id, category_name in categories %}
+                    <a href="{% url 'product_by_category' category_id %}" class="list-group-item list-group-item-action">
+                        {{ category_name }}
+                    </a>
+                {% endfor %}
+            </div>
         </div>
-    </div>
-</div>
-{% endblock %}
+        
+        <!-- Main content for Products -->
+        <div class="col-md-9">
+            <div class="row">
+                {% if products %}
+                    {% for product in products %}
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 shadow-sm position-relative overflow-hidden">
+                                <div class="position-relative">
+                                    <img src="{{ product.5 }}" class="card-img-top" alt="{{ product.name }}" style="height: 200px; object-fit: contain;">
+                                    <div class="card-icons position-absolute top-50 start-50 translate-middle">
+                                        <a href="{% url 'product_detail' product.0 %}" class="btn btn-primary me-2">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{% url 'add_to_cart' product.0 %}" class="btn btn-success">
+                                            <i class="bi bi-cart-plus"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ product.1 }}</h5>
+                                    <p class="card-text"><strong>${{ product.3 }}</strong></p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No products found matching your search criteria.</p>
+                {% endif %}
+
+            </div>
+        </div>
+        </div>
+        </div>
+        
+        <style>
+            .card {
+                transition: transform 0.2s;
+            }
+        
+            .card:hover {
+                transform: scale(1.05);
+            }
+        
+            .card-icons {
+                display: none;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 10;
+            }
+        
+            .card:hover .card-icons {
+                display: flex;
+            }
+        </style>
+        {% endblock %}

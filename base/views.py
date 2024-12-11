@@ -26,17 +26,43 @@ def execute_sql(query, params=()):
         return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
 
+def homepage(self):
+    featured_products = Product.objects.all()[:10]
+    context = {"featured_products": featured_products}
+    return render(self, "base/homepage.html", context)
+
+
 # View to display all products
 def product_list(request):
-    # Fetch products
+    search_query = request.GET.get("search", "")
+    sort_option = request.GET.get("sort", "name_asc")  # Default sort option
+
+    print("SEARCH QUERY:", search_query)
+
+    # Map user-friendly sort options to database fields and order
+    sort_mapping = {
+        "price_asc": ("unit_price", "ASC"),
+        "price_desc": ("unit_price", "DESC"),
+        "name_asc": ("name", "ASC"),
+        "name_desc": ("name", "DESC"),
+    }
+
+    # Get the sort field and order from the mapping
+    sort_by, sort_order = sort_mapping.get(sort_option, ("name", "ASC"))
+
+    # Fetch products with search and sort
     with connection.cursor() as cursor:
         cursor.execute(
             f"""
             SELECT id, name, description, unit_price, stock, CONCAT('{media_url}', image) AS image
-            FROM base_product;
-            """
+            FROM base_product
+            WHERE name LIKE %s
+            ORDER BY {sort_by} {sort_order};
+            """,
+            [f"%{search_query}%"],  # Use parameterized query to prevent SQL injection
         )
         products = cursor.fetchall()
+        print(products)
 
     # Fetch categories
     with connection.cursor() as cursor:
@@ -51,7 +77,12 @@ def product_list(request):
     return render(
         request,
         "base/product_list.html",
-        {"products": products, "categories": categories},
+        {
+            "products": products,
+            "categories": categories,
+            "search_query": search_query,
+            "sort_option": sort_option,
+        },
     )
 
 
@@ -86,6 +117,7 @@ def view_cart(request):
 
     with connection.cursor() as cursor:
         # Query to get the cart items for the customer
+        # Mahfuj start
         cursor.execute(
             f"""
             SELECT ci.id, p.name, CONCAT('{media_url}', p.image) AS image, ci.quantity, p.unit_price,
@@ -97,6 +129,7 @@ def view_cart(request):
             """,
             [customer.id],  # Pass the customer ID
         )
+        # Mahfuj end
 
         cart_items = cursor.fetchall()
 
@@ -185,6 +218,7 @@ def remove_from_cart(request, cart_item_id):
 
     with connection.cursor() as cursor:
         # Execute the delete query
+        # Nasif start
         cursor.execute(
             """
             DELETE FROM base_cartitem
@@ -194,6 +228,7 @@ def remove_from_cart(request, cart_item_id):
             """,
             [cart_item_id, customer.id],
         )
+        # Nasif end
 
     # Redirect back to the cart view
     return redirect(

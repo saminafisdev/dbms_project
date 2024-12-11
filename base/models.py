@@ -32,6 +32,7 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
+    # is_featured = models.BooleanField(default=False)  # New field for featured products
 
     def __str__(self):
         return self.name
